@@ -42,20 +42,13 @@ func Detect(logger LogEmitter) packit.DetectFunc {
 
 		rubyVersion := configuration.DefaultRubyVersion
 
-		gemFileLock, err := os.Open(filepath.Join(context.WorkingDir, "Gemfile.lock"))
+		rvFile, err := os.Open(filepath.Join(context.WorkingDir, ".ruby-version"))
 		if err == nil {
-			defer gemFileLock.Close()
-			bundledWithFound := false
-			scanner := bufio.NewScanner(gemFileLock)
-			for scanner.Scan() {
-				if bundledWithFound {
-					rubyVersion = strings.TrimSpace(scanner.Text())
-					logger.Detail("Found Ruby version in Gemfile.lock: %s", rubyVersion)
-					break
-				}
-				if scanner.Text() == "RUBY VERSION" {
-					bundledWithFound = true
-				}
+			defer rvFile.Close()
+			bytes, err := ioutil.ReadAll(rvFile)
+			if err == nil {
+				rubyVersion = strings.TrimSpace(string(bytes))
+				logger.Detail("Found Ruby version in .ruby-version: %s", rubyVersion)
 			}
 		}
 
@@ -68,25 +61,30 @@ func Detect(logger LogEmitter) packit.DetectFunc {
 			defer file.Close()
 
 			scanner := bufio.NewScanner(file)
-			re, err := regexp.Compile(`^ruby "[[:alnum:]\.\-]"`)
+			re, err := regexp.Compile(`^ruby ["']?([[:alnum:]\.\-]+)["']?`)
 			if err == nil {
 				for scanner.Scan() {
-					rubyVersionText := re.Find([]byte(scanner.Text()))
-					if rubyVersionText != nil {
-						rubyVersion = string(rubyVersionText)
-						logger.Detail("Found Ruby version in Gemfile %s", rubyVersion)
+					rubySubSlices := re.FindSubmatch([]byte(scanner.Text()))
+					if rubySubSlices != nil {
+						rubyVersion = string(rubySubSlices[1])
+						logger.Detail("Found Ruby version in Gemfile: %s", rubyVersion)
 					}
 				}
 			}
 		}
 
-		rvFile, err := os.Open(filepath.Join(context.WorkingDir, ".ruby-version"))
+		gemFileLock, err := os.Open(filepath.Join(context.WorkingDir, "Gemfile.lock"))
 		if err == nil {
-			defer rvFile.Close()
-			bytes, err := ioutil.ReadAll(rvFile)
-			if err == nil {
-				rubyVersion = string(bytes)
-				logger.Detail("Found Ruby version in .ruby-version: %s", rubyVersion)
+			defer gemFileLock.Close()
+			scanner := bufio.NewScanner(gemFileLock)
+			for scanner.Scan() {
+				if strings.TrimSpace(scanner.Text()) == "RUBY VERSION" {
+					if scanner.Scan() {
+						rubyVersion = strings.TrimSpace(strings.Trim(scanner.Text(), "ruby "))
+						logger.Detail("Found Ruby version in Gemfile.lock: %s", rubyVersion)
+						break
+					}
+				}
 			}
 		}
 
