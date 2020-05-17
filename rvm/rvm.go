@@ -10,8 +10,8 @@ import (
 	"github.com/cloudfoundry/packit"
 )
 
-// RvmEnv represents an RVM environment
-type RvmEnv struct {
+// Env represents an RVM environment
+type Env struct {
 	context       packit.BuildContext
 	logger        LogEmitter
 	configuration Configuration
@@ -19,7 +19,7 @@ type RvmEnv struct {
 }
 
 // BuildRvm builds the RVM environment
-func (r RvmEnv) BuildRvm() (packit.BuildResult, error) {
+func (r Env) BuildRvm() (packit.BuildResult, error) {
 	r.logger.Title("%s %s", r.context.BuildpackInfo.Name, r.context.BuildpackInfo.Version)
 
 	r.logger.Process("Using RVM URI: %s\n", r.configuration.URI)
@@ -33,7 +33,7 @@ func (r RvmEnv) BuildRvm() (packit.BuildResult, error) {
 	return buildResult, nil
 }
 
-func (r RvmEnv) rubyVersion() string {
+func (r Env) rubyVersion() string {
 	rubyVersion := r.configuration.DefaultRubyVersion
 	for _, entry := range r.context.Plan.Entries {
 		if entry.Name == "rvm" {
@@ -43,7 +43,7 @@ func (r RvmEnv) rubyVersion() string {
 	return rubyVersion
 }
 
-func (r RvmEnv) installRVM() (packit.BuildResult, error) {
+func (r Env) installRVM() (packit.BuildResult, error) {
 	rvmLayer, err := r.context.Layers.Get("rvm", packit.LaunchLayer)
 	if err != nil {
 		return packit.BuildResult{}, err
@@ -114,7 +114,7 @@ func (r RvmEnv) installRVM() (packit.BuildResult, error) {
 	}, nil
 }
 
-func (r RvmEnv) runCommand(cmd *exec.Cmd, rvmLayer *packit.Layer) error {
+func (r Env) runCommand(cmd *exec.Cmd, rvmLayer *packit.Layer) error {
 	cmd.Env = append(
 		os.Environ(),
 		"rvm_path="+rvmLayer.Path,
