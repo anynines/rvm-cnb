@@ -13,17 +13,24 @@ const (
 	DefaultNodeVersion string = "12.*"
 )
 
-type buildPlanMetadata struct {
+// VersionParser represents a parser for files like .ruby-version and Gemfiles
+type VersionParser interface {
+	ParseVersion(path string) (version string, err error)
+}
+
+// BuildPlanMetadata represents this buildpack's metadata
+type BuildPlanMetadata struct {
 	RubyVersion string `toml:"ruby_version"`
 }
 
-type nodebuildPlanMetadata struct {
+// NodebuildPlanMetadata represents the metadata for the node dependency
+type NodebuildPlanMetadata struct {
 	Build  bool `toml:"build"`
 	Launch bool `toml:"launch"`
 }
 
 // Detect whether this buildpack should install RVM
-func Detect(logger LogEmitter) packit.DetectFunc {
+func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser VersionParser, gemFileLockParser VersionParser) packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
 		_, err := os.Stat(filepath.Join(context.WorkingDir, "Gemfile"))
 		if os.IsNotExist(err) {
@@ -37,7 +44,6 @@ func Detect(logger LogEmitter) packit.DetectFunc {
 
 		rubyVersion := configuration.DefaultRubyVersion
 
-		rubyVersionParser := NewRubyVersionParser()
 		rubyVersionPath := filepath.Join(context.WorkingDir, ".ruby-version")
 		parseResultRubyVersion, err := rubyVersionParser.ParseVersion(rubyVersionPath)
 		if err == nil && parseResultRubyVersion != "" {
@@ -45,7 +51,6 @@ func Detect(logger LogEmitter) packit.DetectFunc {
 			logger.Detail("Found Ruby version in %s: %s", rubyVersionPath, rubyVersion)
 		}
 
-		gemFileParser := NewGemfileParser()
 		gemFilePath := filepath.Join(context.WorkingDir, "Gemfile")
 		parseResultGemfile, err := gemFileParser.ParseVersion(gemFilePath)
 		if err == nil && parseResultGemfile != "" {
@@ -53,7 +58,6 @@ func Detect(logger LogEmitter) packit.DetectFunc {
 			logger.Detail("Found Ruby version in %s: %s", gemFilePath, rubyVersion)
 		}
 
-		gemFileLockParser := NewGemfileLockParser()
 		gemFileLockPath := filepath.Join(context.WorkingDir, "Gemfile.lock")
 		parseResultGemfileLock, err := gemFileLockParser.ParseVersion(gemFileLockPath)
 		if err == nil && parseResultGemfileLock != "" {
@@ -70,12 +74,12 @@ func Detect(logger LogEmitter) packit.DetectFunc {
 				Requires: []packit.BuildPlanRequirement{
 					{
 						Name:     "rvm",
-						Metadata: buildPlanMetadata{RubyVersion: rubyVersion},
+						Metadata: BuildPlanMetadata{RubyVersion: rubyVersion},
 					},
 					{
 						Name:    "node",
 						Version: DefaultNodeVersion,
-						Metadata: nodebuildPlanMetadata{
+						Metadata: NodebuildPlanMetadata{
 							Build:  true,
 							Launch: true,
 						},
