@@ -43,6 +43,16 @@ func (r Env) rubyVersion() string {
 	return rubyVersion
 }
 
+func (r Env) bundlerVersion() string {
+	bundlerVersion := r.configuration.DefaultBundlerVersion
+	for _, entry := range r.context.Plan.Entries {
+		if entry.Name == "rvm" {
+			bundlerVersion = fmt.Sprintf("%v", entry.Metadata["bundler_version"])
+		}
+	}
+	return bundlerVersion
+}
+
 func (r Env) installRVM() (packit.BuildResult, error) {
 	rvmLayer, err := r.context.Layers.Get("rvm", packit.LaunchLayer)
 	if err != nil {
@@ -101,6 +111,28 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 	}
 
 	cmd = exec.Command(filepath.Join(rvmLayer.Path, "bin", "rvm"), "install", r.rubyVersion())
+	err = r.runCommand(cmd, &rvmLayer)
+	if err != nil {
+		return packit.BuildResult{}, err
+	}
+
+	profileDScript := filepath.Join(rvmLayer.Path, "profile.d", "rvm")
+	bundlerCmd := strings.Join([]string{
+		"source",
+		profileDScript,
+		"&&",
+		"gem",
+		"install",
+		"-N",
+		"--default",
+		"bundler",
+	}, " ")
+
+	bundlerVersion := r.bundlerVersion()
+	if bundlerVersion != "" && bundlerVersion != "latest" {
+		bundlerCmd = strings.Join([]string{bundlerCmd, "-v", bundlerVersion}, " ")
+	}
+	cmd = exec.Command("bash", "-c", bundlerCmd)
 	err = r.runCommand(cmd, &rvmLayer)
 	if err != nil {
 		return packit.BuildResult{}, err

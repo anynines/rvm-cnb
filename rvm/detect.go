@@ -20,7 +20,8 @@ type VersionParser interface {
 
 // BuildPlanMetadata represents this buildpack's metadata
 type BuildPlanMetadata struct {
-	RubyVersion string `toml:"ruby_version"`
+	RubyVersion    string `toml:"ruby_version"`
+	BundlerVersion string `toml:"bundler_version"`
 }
 
 // NodebuildPlanMetadata represents the metadata for the node dependency
@@ -30,7 +31,7 @@ type NodebuildPlanMetadata struct {
 }
 
 // Detect whether this buildpack should install RVM
-func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser VersionParser, gemFileLockParser VersionParser) packit.DetectFunc {
+func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser VersionParser, gemFileLockParser VersionParser, bundlerVersionParser VersionParser) packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
 		_, err := os.Stat(filepath.Join(context.WorkingDir, "Gemfile"))
 		if os.IsNotExist(err) {
@@ -43,6 +44,7 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 		}
 
 		rubyVersion := configuration.DefaultRubyVersion
+		bundlerVersion := configuration.DefaultBundlerVersion
 
 		rubyVersionPath := filepath.Join(context.WorkingDir, ".ruby-version")
 		parseResultRubyVersion, err := rubyVersionParser.ParseVersion(rubyVersionPath)
@@ -65,7 +67,14 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 			logger.Detail("Found Ruby version in %s: %s", gemFileLockPath, rubyVersion)
 		}
 
+		parseResultBunderVersion, err := bundlerVersionParser.ParseVersion(gemFileLockPath)
+		if err == nil && parseResultBunderVersion != "" {
+			bundlerVersion = parseResultBunderVersion
+			logger.Detail("Found Bundler version in %s: %s", gemFileLockPath, bundlerVersion)
+		}
+
 		logger.Detail("Detected Ruby version: %s", rubyVersion)
+		logger.Detail("Detected Bundler version: %s", bundlerVersion)
 		return packit.DetectResult{
 			Plan: packit.BuildPlan{
 				Provides: []packit.BuildPlanProvision{
@@ -73,8 +82,11 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 				},
 				Requires: []packit.BuildPlanRequirement{
 					{
-						Name:     "rvm",
-						Metadata: BuildPlanMetadata{RubyVersion: rubyVersion},
+						Name: "rvm",
+						Metadata: BuildPlanMetadata{
+							BundlerVersion: bundlerVersion,
+							RubyVersion:    rubyVersion,
+						},
 					},
 					{
 						Name:    "node",

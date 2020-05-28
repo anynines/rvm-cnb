@@ -10,9 +10,10 @@ import (
 // Configuration represents this buildpack's configuration read from a table
 // named "configuration"
 type Configuration struct {
-	URI                string `toml:"uri"`
-	DefaultRVMVersion  string `toml:"default_rvm_version"`
-	DefaultRubyVersion string `toml:"default_ruby_version"`
+	URI                   string `toml:"uri"`
+	DefaultRVMVersion     string `toml:"default_rvm_version"`
+	DefaultRubyVersion    string `toml:"default_ruby_version"`
+	DefaultBundlerVersion string `toml:"default_bundler_version"`
 }
 
 // MetaData represents this buildpack's metadata
