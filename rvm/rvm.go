@@ -117,6 +117,22 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 	}
 
 	profileDScript := filepath.Join(rvmLayer.Path, "profile.d", "rvm")
+	gemUpdateSystemCmd := strings.Join([]string{
+		"source",
+		profileDScript,
+		"&&",
+		"gem",
+		"update",
+		"-N",
+		"--system",
+	}, " ")
+
+	cmd = exec.Command("bash", "-c", gemUpdateSystemCmd)
+	err = r.runCommand(cmd, &rvmLayer)
+	if err != nil {
+		return packit.BuildResult{}, err
+	}
+
 	bundlerCmd := strings.Join([]string{
 		"source",
 		profileDScript,
