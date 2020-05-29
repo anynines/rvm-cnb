@@ -23,6 +23,28 @@ type NodebuildPlanMetadata struct {
 	Launch bool `toml:"launch"`
 }
 
+// VersionParserEnv represents an environment that contains everything that is
+// needed to execute a particular ruby version parser
+type VersionParserEnv struct {
+	parser  VersionParser
+	path    string
+	context packit.DetectContext
+	logger  LogEmitter
+}
+
+// ParseVersion is a generalized function that parses a particular ruby version
+// source
+func ParseVersion(env VersionParserEnv, version *string) error {
+	fullPath := filepath.Join(env.context.WorkingDir, env.path)
+	parseResultRubyVersion, err := env.parser.ParseVersion(fullPath)
+	if err == nil && parseResultRubyVersion != "" {
+		*version = parseResultRubyVersion
+		env.logger.Detail("Found Ruby version in %s: %s", fullPath, *version)
+		return nil
+	}
+	return err
+}
+
 // Detect whether this buildpack should install RVM
 func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser VersionParser, gemFileLockParser VersionParser) packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
@@ -38,25 +60,33 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 
 		rubyVersion := configuration.DefaultRubyVersion
 
-		rubyVersionPath := filepath.Join(context.WorkingDir, ".ruby-version")
-		parseResultRubyVersion, err := rubyVersionParser.ParseVersion(rubyVersionPath)
-		if err == nil && parseResultRubyVersion != "" {
-			rubyVersion = parseResultRubyVersion
-			logger.Detail("Found Ruby version in %s: %s", rubyVersionPath, rubyVersion)
+		versionEnvs := []VersionParserEnv{
+			{
+				parser:  rubyVersionParser,
+				path:    ".ruby-version",
+				context: context,
+				logger:  logger,
+			},
+			{
+				parser:  gemFileParser,
+				path:    "Gemfile",
+				context: context,
+				logger:  logger,
+			},
+			{
+				parser:  gemFileLockParser,
+				path:    "Gemfile.lock",
+				context: context,
+				logger:  logger,
+			},
 		}
 
-		gemFilePath := filepath.Join(context.WorkingDir, "Gemfile")
-		parseResultGemfile, err := gemFileParser.ParseVersion(gemFilePath)
-		if err == nil && parseResultGemfile != "" {
-			rubyVersion = parseResultGemfile
-			logger.Detail("Found Ruby version in %s: %s", gemFilePath, rubyVersion)
-		}
-
-		gemFileLockPath := filepath.Join(context.WorkingDir, "Gemfile.lock")
-		parseResultGemfileLock, err := gemFileLockParser.ParseVersion(gemFileLockPath)
-		if err == nil && parseResultGemfileLock != "" {
-			rubyVersion = parseResultGemfileLock
-			logger.Detail("Found Ruby version in %s: %s", gemFileLockPath, rubyVersion)
+		for _, env := range versionEnvs {
+			err = ParseVersion(env, &rubyVersion)
+			if err != nil {
+				logger.Detail("Parsing '%s' failed", env.path)
+				return packit.DetectResult{}, err
+			}
 		}
 
 		logger.Detail("Detected Ruby version: %s", rubyVersion)
