@@ -135,7 +135,6 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 		"| bash -s -- --version",
 		r.Configuration.DefaultRVMVersion,
 	}, " ")
-	// cmd := exec.Command("bash", "-c", shellCmd)
 	err = r.RunBashCmd(shellCmd, &rvmLayer)
 	if err != nil {
 		return packit.BuildResult{}, err
@@ -167,8 +166,19 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 		"-N",
 		"--system",
 	}, " ")
-
 	err = r.RunRvmCmd(gemUpdateSystemCmd, &rvmLayer)
+	if err != nil {
+		return packit.BuildResult{}, err
+	}
+
+	gemCleanupCmd := strings.Join([]string{"gem", "cleanup"}, " ")
+	err = r.RunRvmCmd(gemCleanupCmd, &rvmLayer)
+	if err != nil {
+		return packit.BuildResult{}, err
+	}
+
+	rvmCleanupCmd := strings.Join([]string{"rvm", "cleanup", "all"}, " ")
+	err = r.RunRvmCmd(rvmCleanupCmd, &rvmLayer)
 	if err != nil {
 		return packit.BuildResult{}, err
 	}
