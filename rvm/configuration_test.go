@@ -62,6 +62,7 @@ func testConfiguration(t *testing.T, context spec.G, it spec.S) {
 				DefaultRVMVersion:  "1.29.10",
 				DefaultRubyVersion: "2.7.1",
 				DefaultNodeVersion: "12.*",
+				DefaultRequireNode: false,
 			}))
 		})
 

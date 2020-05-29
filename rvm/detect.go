@@ -46,7 +46,7 @@ func ParseVersion(env VersionParserEnv, version *string) error {
 }
 
 // Detect whether this buildpack should install RVM
-func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser VersionParser, gemFileLockParser VersionParser) packit.DetectFunc {
+func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser VersionParser, gemFileLockParser VersionParser, buildpackYMLParser VersionParser) packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
 		_, err := os.Stat(filepath.Join(context.WorkingDir, "Gemfile"))
 		if os.IsNotExist(err) {
@@ -60,6 +60,8 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 
 		rubyVersion := configuration.DefaultRubyVersion
 
+		// NOTE: the order of the parsers is important, the last one to return a
+		// ruby version string "wins"
 		versionEnvs := []VersionParserEnv{
 			{
 				parser:  rubyVersionParser,
@@ -79,6 +81,12 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 				context: context,
 				logger:  logger,
 			},
+			{
+				parser:  buildpackYMLParser,
+				path:    "buildpack.yml",
+				context: context,
+				logger:  logger,
+			},
 		}
 
 		for _, env := range versionEnvs {
@@ -89,28 +97,41 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 			}
 		}
 
+		requirements := []packit.BuildPlanRequirement{
+			{
+				Name: "rvm",
+				Metadata: BuildPlanMetadata{
+					RubyVersion: rubyVersion,
+				},
+			},
+		}
+
+		buildPackYMLPath := filepath.Join(context.WorkingDir, "buildpack.yml")
+		buildPackYML, err := BuildpackYMLParse(buildPackYMLPath)
+		if err != nil {
+			logger.Detail("Parsing '%s' failed", buildPackYMLPath)
+			return packit.DetectResult{}, err
+		}
+
+		if buildPackYML.RequireNode {
+			logger.Detail("The buildpack 'node' was requested as a requirement")
+			requirements = append(requirements, packit.BuildPlanRequirement{
+				Name:    "node",
+				Version: configuration.DefaultNodeVersion,
+				Metadata: NodebuildPlanMetadata{
+					Build:  true,
+					Launch: true,
+				},
+			})
+		}
+
 		logger.Detail("Detected Ruby version: %s", rubyVersion)
 		return packit.DetectResult{
 			Plan: packit.BuildPlan{
 				Provides: []packit.BuildPlanProvision{
 					{Name: "rvm"},
 				},
-				Requires: []packit.BuildPlanRequirement{
-					{
-						Name: "rvm",
-						Metadata: BuildPlanMetadata{
-							RubyVersion: rubyVersion,
-						},
-					},
-					{
-						Name:    "node",
-						Version: configuration.DefaultNodeVersion,
-						Metadata: NodebuildPlanMetadata{
-							Build:  true,
-							Launch: true,
-						},
-					},
-				},
+				Requires: requirements,
 			},
 		}, nil
 	}

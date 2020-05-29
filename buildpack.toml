@@ -12,7 +12,7 @@ api = "0.2"
     uri = "https://get.rvm.io"
     default_rvm_version = "1.29.10"
     default_ruby_version = "2.7.1"
-    default_bundler_version = "2.1.4"
+    default_require_node = false
     default_node_version = "12.*"
 
 [[stacks]]

@@ -13,5 +13,6 @@ func main() {
 	rubyVersionParser := rvm.NewRubyVersionParser()
 	gemFileParser := rvm.NewGemfileParser()
 	gemFileLockParser := rvm.NewGemfileLockParser()
-	packit.Detect(rvm.Detect(logEmitter, rubyVersionParser, gemFileParser, gemFileLockParser))
+	buildpackYMLParser := rvm.NewBuildpackYMLParser()
+	packit.Detect(rvm.Detect(logEmitter, rubyVersionParser, gemFileParser, gemFileLockParser, buildpackYMLParser))
 }

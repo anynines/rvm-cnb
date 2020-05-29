@@ -14,6 +14,7 @@ type Configuration struct {
 	DefaultRVMVersion  string `toml:"default_rvm_version"`
 	DefaultRubyVersion string `toml:"default_ruby_version"`
 	DefaultNodeVersion string `toml:"default_node_version"`
+	DefaultRequireNode bool   `toml:"default_require_node"`
 }
 
 // MetaData represents this buildpack's metadata
