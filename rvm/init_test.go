@@ -13,6 +13,7 @@ func TestUnitRvm(t *testing.T) {
 	suite("Environment", testEnvironment)
 	suite("GemFileParser", testGemFileParser)
 	suite("GemFileLockParser", testGemFileLockParser)
+	suite("RubyVersionParser", testRubyVersionParser)
 	suite("Detect", testDetect)
 	suite.Run(t)
 }
