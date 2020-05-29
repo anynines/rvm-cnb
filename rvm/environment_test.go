@@ -74,6 +74,11 @@ func testEnvironment(t *testing.T, context spec.G, it spec.S) {
 			err := rvmEnv.Environment.Configure(env, layersDir)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(filepath.Join(layersDir, "profile.d", "rvm")).To(BeARegularFile())
+			Expect(env).To(Equal(packit.Environment{
+				"rvm_autoupdate_flag.override": "0",
+				"rvm_path.override":            layersDir,
+				"rvm_scripts_path.override":    filepath.Join(layersDir, "scripts"),
+			}))
 		})
 
 		it.After(func() {
