@@ -13,19 +13,19 @@ import (
 
 // Env represents an RVM environment
 type Env struct {
-	context       packit.BuildContext
-	logger        LogEmitter
-	configuration Configuration
-	environment   EnvironmentConfiguration
+	Context       packit.BuildContext
+	Logger        LogEmitter
+	Configuration Configuration
+	Environment   EnvironmentConfiguration
 }
 
 // BuildRvm builds the RVM environment
 func (r Env) BuildRvm() (packit.BuildResult, error) {
-	r.logger.Title("%s %s", r.context.BuildpackInfo.Name, r.context.BuildpackInfo.Version)
+	r.Logger.Title("%s %s", r.Context.BuildpackInfo.Name, r.Context.BuildpackInfo.Version)
 
-	r.logger.Process("Using RVM URI: %s\n", r.configuration.URI)
-	r.logger.Process("default RVM version: %s\n", r.configuration.DefaultRVMVersion)
-	r.logger.Process("build plan Ruby version: %s\n", r.rubyVersion())
+	r.Logger.Process("Using RVM URI: %s\n", r.Configuration.URI)
+	r.Logger.Process("default RVM version: %s\n", r.Configuration.DefaultRVMVersion)
+	r.Logger.Process("build plan Ruby version: %s\n", r.rubyVersion())
 
 	buildResult, err := r.installRVM()
 	if err != nil {
@@ -42,9 +42,9 @@ func (r Env) RunBashCmd(command string, rvmLayer *packit.Layer) error {
 		DefaultVariables(rvmLayer)...,
 	)
 
-	r.logger.Process("Executing: %s", strings.Join(cmd.Args, " "))
-	r.logger.Subprocess("Environment variables:\n%s", strings.Join(cmd.Env, "\n"))
-	r.logger.Break()
+	r.Logger.Process("Executing: %s", strings.Join(cmd.Args, " "))
+	r.Logger.Subprocess("Environment variables:\n%s", strings.Join(cmd.Env, "\n"))
+	r.Logger.Break()
 
 	var stdOutBytes bytes.Buffer
 	cmd.Stdout = &stdOutBytes
@@ -55,14 +55,14 @@ func (r Env) RunBashCmd(command string, rvmLayer *packit.Layer) error {
 	err := cmd.Run()
 
 	if err != nil {
-		r.logger.Subprocess("Command failed: %s", cmd.String())
-		r.logger.Subprocess("Command stderr: %s", stdErrBytes)
-		r.logger.Subprocess("Error status code: %s", err.Error())
+		r.Logger.Subprocess("Command failed: %s", cmd.String())
+		r.Logger.Subprocess("Command stderr: %s", stdErrBytes)
+		r.Logger.Subprocess("Error status code: %s", err.Error())
 		return err
 	}
 
-	r.logger.Subprocess("Command succeeded: %s", cmd.String())
-	r.logger.Subprocess("Command output: %s", stdOutBytes)
+	r.Logger.Subprocess("Command succeeded: %s", cmd.String())
+	r.Logger.Subprocess("Command output: %s", stdOutBytes)
 
 	return nil
 }
@@ -81,8 +81,8 @@ func (r Env) RunRvmCmd(command string, rvmLayer *packit.Layer) error {
 }
 
 func (r Env) rubyVersion() string {
-	rubyVersion := r.configuration.DefaultRubyVersion
-	for _, entry := range r.context.Plan.Entries {
+	rubyVersion := r.Configuration.DefaultRubyVersion
+	for _, entry := range r.Context.Plan.Entries {
 		if entry.Name == "rvm" {
 			rubyVersion = fmt.Sprintf("%v", entry.Metadata["ruby_version"])
 		}
@@ -91,31 +91,31 @@ func (r Env) rubyVersion() string {
 }
 
 func (r Env) installRVM() (packit.BuildResult, error) {
-	rvmLayer, err := r.context.Layers.Get("rvm", packit.LaunchLayer)
+	rvmLayer, err := r.Context.Layers.Get("rvm", packit.LaunchLayer)
 	if err != nil {
 		return packit.BuildResult{}, err
 	}
 
 	if rvmLayer.Metadata["rvm_version"] != nil &&
-		rvmLayer.Metadata["rvm_version"].(string) == r.configuration.DefaultRVMVersion {
-		r.logger.Process("Reusing cached layer %s", rvmLayer.Path)
+		rvmLayer.Metadata["rvm_version"].(string) == r.Configuration.DefaultRVMVersion {
+		r.Logger.Process("Reusing cached layer %s", rvmLayer.Path)
 		return packit.BuildResult{
-			Plan: r.context.Plan,
+			Plan: r.Context.Plan,
 			Layers: []packit.Layer{
 				rvmLayer,
 			},
 		}, nil
 	}
 
-	r.logger.Process("Installing RVM version '%s' from URI '%s'", r.configuration.DefaultRVMVersion, r.configuration.URI)
+	r.Logger.Process("Installing RVM version '%s' from URI '%s'", r.Configuration.DefaultRVMVersion, r.Configuration.URI)
 
 	if err = rvmLayer.Reset(); err != nil {
-		r.logger.Process("Resetting RVM layer failed")
+		r.Logger.Process("Resetting RVM layer failed")
 		return packit.BuildResult{}, err
 	}
 
 	rvmLayer.Metadata = map[string]interface{}{
-		"rvm_version":  r.configuration.DefaultRVMVersion,
+		"rvm_version":  r.Configuration.DefaultRVMVersion,
 		"ruby_version": r.rubyVersion(),
 	}
 
@@ -123,7 +123,7 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 	rvmLayer.Cache = true
 	rvmLayer.Launch = true
 
-	err = r.environment.Configure(rvmLayer.SharedEnv, rvmLayer.Path)
+	err = r.Environment.Configure(rvmLayer.SharedEnv, rvmLayer.Path)
 	if err != nil {
 		return packit.BuildResult{}, err
 	}
@@ -131,9 +131,9 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 	shellCmd := strings.Join([]string{
 		"curl",
 		"-vsSL",
-		r.configuration.URI,
+		r.Configuration.URI,
 		"| bash -s -- --version",
-		r.configuration.DefaultRVMVersion,
+		r.Configuration.DefaultRVMVersion,
 	}, " ")
 	// cmd := exec.Command("bash", "-c", shellCmd)
 	err = r.RunBashCmd(shellCmd, &rvmLayer)
@@ -174,7 +174,7 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 	}
 
 	return packit.BuildResult{
-		Plan: r.context.Plan,
+		Plan: r.Context.Plan,
 		Layers: []packit.Layer{
 			rvmLayer,
 		},

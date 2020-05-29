@@ -19,10 +19,10 @@ func Build(environment EnvironmentConfiguration, logger LogEmitter) packit.Build
 		}
 
 		rvmEnv := Env{
-			configuration: configuration,
-			context:       context,
-			environment:   environment,
-			logger:        logger,
+			Configuration: configuration,
+			Context:       context,
+			Environment:   environment,
+			Logger:        logger,
 		}
 
 		return rvmEnv.BuildRvm()
