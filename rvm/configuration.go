@@ -13,6 +13,7 @@ type Configuration struct {
 	URI                string `toml:"uri"`
 	DefaultRVMVersion  string `toml:"default_rvm_version"`
 	DefaultRubyVersion string `toml:"default_ruby_version"`
+	DefaultNodeVersion string `toml:"default_node_version"`
 }
 
 // MetaData represents this buildpack's metadata

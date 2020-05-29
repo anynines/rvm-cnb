@@ -27,6 +27,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		gemFileParser     *fakes.VersionParser
 		gemFileLockParser *fakes.VersionParser
 		detect            packit.DetectFunc
+		configuration     rvm.Configuration
 	)
 
 	it.Before(func() {
@@ -69,6 +70,9 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 			err = ioutil.WriteFile(filepath.Join(workingDir, "Gemfile"), basicGemfile, 0644)
 			Expect(err).NotTo(HaveOccurred())
+
+			configuration, err = rvm.ReadConfiguration(cnbDir)
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		it("returns a plan that provides RVM and requires node", func() {
@@ -90,7 +94,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					},
 					{
 						Name:    "node",
-						Version: rvm.DefaultNodeVersion,
+						Version: configuration.DefaultNodeVersion,
 						Metadata: rvm.NodebuildPlanMetadata{
 							Build:  true,
 							Launch: true,
@@ -126,7 +130,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					},
 					{
 						Name:    "node",
-						Version: rvm.DefaultNodeVersion,
+						Version: configuration.DefaultNodeVersion,
 						Metadata: rvm.NodebuildPlanMetadata{
 							Build:  true,
 							Launch: true,
@@ -165,7 +169,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					},
 					{
 						Name:    "node",
-						Version: rvm.DefaultNodeVersion,
+						Version: configuration.DefaultNodeVersion,
 						Metadata: rvm.NodebuildPlanMetadata{
 							Build:  true,
 							Launch: true,
@@ -204,7 +208,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					},
 					{
 						Name:    "node",
-						Version: rvm.DefaultNodeVersion,
+						Version: configuration.DefaultNodeVersion,
 						Metadata: rvm.NodebuildPlanMetadata{
 							Build:  true,
 							Launch: true,

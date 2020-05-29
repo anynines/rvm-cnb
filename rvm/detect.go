@@ -7,12 +7,6 @@ import (
 	"github.com/paketo-buildpacks/packit"
 )
 
-const (
-	// DefaultNodeVersion specifies the default NodeJS version to be installed by
-	// the Node CNB.
-	DefaultNodeVersion string = "12.*"
-)
-
 // VersionParser represents a parser for files like .ruby-version and Gemfiles
 type VersionParser interface {
 	ParseVersion(path string) (version string, err error)
@@ -80,7 +74,7 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 					},
 					{
 						Name:    "node",
-						Version: DefaultNodeVersion,
+						Version: configuration.DefaultNodeVersion,
 						Metadata: NodebuildPlanMetadata{
 							Build:  true,
 							Launch: true,
