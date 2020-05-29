@@ -115,9 +115,13 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 
 		if buildPackYML.RequireNode {
 			logger.Detail("The buildpack 'node' was requested as a requirement")
+			nodeVersion := configuration.DefaultNodeVersion
+			if buildPackYML.NodeVersion != "" {
+				nodeVersion = buildPackYML.NodeVersion
+			}
 			requirements = append(requirements, packit.BuildPlanRequirement{
 				Name:    "node",
-				Version: configuration.DefaultNodeVersion,
+				Version: nodeVersion,
 				Metadata: NodebuildPlanMetadata{
 					Build:  true,
 					Launch: true,

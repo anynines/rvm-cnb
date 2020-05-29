@@ -226,6 +226,9 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			rubyVersionParser.ParseVersionCall.Receives.Path = buildPackYMLPath
 			rubyVersionParser.ParseVersionCall.Returns.Version = "2.5.3"
 
+			buildPackYMLParsed, err := rvm.BuildpackYMLParse(buildPackYMLPath)
+			Expect(err).NotTo(HaveOccurred())
+
 			result, err := detect(packit.DetectContext{
 				CNBPath:    cnbDir,
 				WorkingDir: workingDir,
@@ -244,7 +247,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					},
 					{
 						Name:    "node",
-						Version: "12.*",
+						Version: buildPackYMLParsed.NodeVersion,
 						Metadata: rvm.NodebuildPlanMetadata{
 							Build:  true,
 							Launch: true,
