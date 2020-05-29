@@ -1,4 +1,4 @@
-module github.com/avarteqgmbh/rvm-go-cnb
+module github.com/avarteqgmbh/rvm-cnb
 
 go 1.14
 

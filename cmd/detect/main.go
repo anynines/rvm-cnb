@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/avarteqgmbh/rvm-go-cnb/rvm"
+	"github.com/avarteqgmbh/rvm-cnb/rvm"
 
 	"github.com/cloudfoundry/packit"
 )

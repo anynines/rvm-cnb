@@ -8,8 +8,8 @@ import (
 
 	"github.com/cloudfoundry/packit"
 
-	"github.com/avarteqgmbh/rvm-go-cnb/rvm"
-	"github.com/avarteqgmbh/rvm-go-cnb/rvm/fakes"
+	"github.com/avarteqgmbh/rvm-cnb/rvm"
+	"github.com/avarteqgmbh/rvm-cnb/rvm/fakes"
 	"github.com/sclevine/spec"
 
 	. "github.com/onsi/gomega"
