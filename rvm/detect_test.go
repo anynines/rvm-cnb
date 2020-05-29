@@ -57,23 +57,19 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			cnbDir, err = ioutil.TempDir("", "cnb")
 			Expect(err).NotTo(HaveOccurred())
 
-			err = ioutil.WriteFile(filepath.Join(cnbDir, "buildpack.toml"), []byte(`api = "0.2"
-[buildpack]
-	id = "org.some-org.some-buildpack"
-	name = "Some Buildpack"
-	version = "some-version"
+			someBuildPackTomlFile, err := ioutil.ReadFile("../test/fixtures/before/some_buildpack.toml")
+			Expect(err).NotTo(HaveOccurred())
 
-	[metadata.configuration]
-		uri = "https://get.rvm.io"
-		default_rvm_version = "1.29.10"
-		default_ruby_version = "2.7.1"
-`), 0644)
+			err = ioutil.WriteFile(filepath.Join(cnbDir, "buildpack.toml"), someBuildPackTomlFile, 0644)
 			Expect(err).NotTo(HaveOccurred())
 
 			workingDir, err = ioutil.TempDir("", "working-dir")
 			Expect(err).NotTo(HaveOccurred())
 
-			err = ioutil.WriteFile(filepath.Join(workingDir, "Gemfile"), []byte("source 'https://rubygems.org'\n"), 0644)
+			basicGemfile, err := ioutil.ReadFile("../test/fixtures/before/Gemfile")
+			Expect(err).NotTo(HaveOccurred())
+
+			err = ioutil.WriteFile(filepath.Join(workingDir, "Gemfile"), basicGemfile, 0644)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -128,6 +124,84 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 						Name: "rvm",
 						Metadata: rvm.BuildPlanMetadata{
 							RubyVersion: "2.3.8",
+						},
+					},
+					{
+						Name:    "node",
+						Version: rvm.DefaultNodeVersion,
+						Metadata: rvm.NodebuildPlanMetadata{
+							Build:  true,
+							Launch: true,
+						},
+					},
+				},
+			}))
+		})
+
+		it("returns a plan that provides RVM, requires node and determines the ruby version by reading the Gemfile", func() {
+			rubyVersionGemfile, err := ioutil.ReadFile("../test/fixtures/read_version_gemfile/Gemfile")
+			Expect(err).NotTo(HaveOccurred())
+
+			gemFilePath := filepath.Join(workingDir, "Gemfile")
+			err = ioutil.WriteFile(gemFilePath, rubyVersionGemfile, 0644)
+			Expect(err).NotTo(HaveOccurred())
+
+			rubyVersionParser.ParseVersionCall.Receives.Path = gemFilePath
+			rubyVersionParser.ParseVersionCall.Returns.Version = "2.5.3"
+
+			result, err := detect(packit.DetectContext{
+				CNBPath:    cnbDir,
+				WorkingDir: workingDir,
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(result.Plan).To(Equal(packit.BuildPlan{
+				Provides: []packit.BuildPlanProvision{
+					{Name: "rvm"},
+				},
+				Requires: []packit.BuildPlanRequirement{
+					{
+						Name: "rvm",
+						Metadata: rvm.BuildPlanMetadata{
+							RubyVersion: "2.5.3",
+						},
+					},
+					{
+						Name:    "node",
+						Version: rvm.DefaultNodeVersion,
+						Metadata: rvm.NodebuildPlanMetadata{
+							Build:  true,
+							Launch: true,
+						},
+					},
+				},
+			}))
+		})
+
+		it("returns a plan that provides RVM, requires node and determines the ruby version by reading Gemfile.lock", func() {
+			rubyVersionGemfileLock, err := ioutil.ReadFile("../test/fixtures/read_version_gemfile/Gemfile.lock")
+			Expect(err).NotTo(HaveOccurred())
+
+			gemFileLockPath := filepath.Join(workingDir, "Gemfile.lock")
+			err = ioutil.WriteFile(gemFileLockPath, rubyVersionGemfileLock, 0644)
+			Expect(err).NotTo(HaveOccurred())
+
+			rubyVersionParser.ParseVersionCall.Receives.Path = gemFileLockPath
+			rubyVersionParser.ParseVersionCall.Returns.Version = "2.5.3"
+
+			result, err := detect(packit.DetectContext{
+				CNBPath:    cnbDir,
+				WorkingDir: workingDir,
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(result.Plan).To(Equal(packit.BuildPlan{
+				Provides: []packit.BuildPlanProvision{
+					{Name: "rvm"},
+				},
+				Requires: []packit.BuildPlanRequirement{
+					{
+						Name: "rvm",
+						Metadata: rvm.BuildPlanMetadata{
+							RubyVersion: "2.5.3",
 						},
 					},
 					{

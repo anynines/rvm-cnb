@@ -1,0 +1,11 @@
+api = "0.2"
+
+[buildpack]
+  id = "org.some-org.some-buildpack"
+  name = "Some Buildpack"
+  version = "some-version"
+
+  [metadata.configuration]
+    uri = "https://get.rvm.io"
+    default_rvm_version = "1.29.10"
+    default_ruby_version = "2.7.1"
