@@ -1,6 +1,7 @@
 package rvm
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -31,6 +32,52 @@ func (r Env) BuildRvm() (packit.BuildResult, error) {
 		return packit.BuildResult{}, err
 	}
 	return buildResult, nil
+}
+
+// RunBashCmd executes a command using BASH
+func (r Env) RunBashCmd(command string, rvmLayer *packit.Layer) error {
+	cmd := exec.Command("bash", "-c", command)
+	cmd.Env = append(
+		os.Environ(),
+		DefaultVariables(rvmLayer)...,
+	)
+
+	r.logger.Process("Executing: %s", strings.Join(cmd.Args, " "))
+	r.logger.Subprocess("Environment variables:\n%s", strings.Join(cmd.Env, "\n"))
+	r.logger.Break()
+
+	var stdOutBytes bytes.Buffer
+	cmd.Stdout = &stdOutBytes
+
+	var stdErrBytes bytes.Buffer
+	cmd.Stderr = &stdErrBytes
+
+	err := cmd.Run()
+
+	if err != nil {
+		r.logger.Subprocess("Command failed: %s", cmd.String())
+		r.logger.Subprocess("Command stderr: %s", stdErrBytes)
+		r.logger.Subprocess("Error status code: %s", err.Error())
+		return err
+	}
+
+	r.logger.Subprocess("Command succeeded: %s", cmd.String())
+	r.logger.Subprocess("Command output: %s", stdOutBytes)
+
+	return nil
+}
+
+// RunRvmCmd executes a command in an RVM environment
+func (r Env) RunRvmCmd(command string, rvmLayer *packit.Layer) error {
+	profileDScript := filepath.Join(rvmLayer.Path, "profile.d", "rvm")
+	fullRvmCommand := strings.Join([]string{
+		"source",
+		profileDScript,
+		"&&",
+		command,
+	}, " ")
+
+	return r.RunBashCmd(fullRvmCommand, rvmLayer)
 }
 
 func (r Env) rubyVersion() string {
@@ -88,37 +135,40 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 		"| bash -s -- --version",
 		r.configuration.DefaultRVMVersion,
 	}, " ")
-	cmd := exec.Command("bash", "-c", shellCmd)
-	err = r.runCommand(cmd, &rvmLayer)
+	// cmd := exec.Command("bash", "-c", shellCmd)
+	err = r.RunBashCmd(shellCmd, &rvmLayer)
 	if err != nil {
 		return packit.BuildResult{}, err
 	}
 
-	cmd = exec.Command(filepath.Join(rvmLayer.Path, "bin", "rvm"), "autolibs", "0")
-	err = r.runCommand(cmd, &rvmLayer)
+	autolibsCmd := strings.Join([]string{
+		filepath.Join(rvmLayer.Path, "bin", "rvm"),
+		"autolibs",
+		"0",
+	}, " ")
+	err = r.RunRvmCmd(autolibsCmd, &rvmLayer)
 	if err != nil {
 		return packit.BuildResult{}, err
 	}
 
-	cmd = exec.Command(filepath.Join(rvmLayer.Path, "bin", "rvm"), "install", r.rubyVersion())
-	err = r.runCommand(cmd, &rvmLayer)
+	rubyInstallCmd := strings.Join([]string{
+		filepath.Join(rvmLayer.Path, "bin", "rvm"),
+		"install",
+		r.rubyVersion(),
+	}, " ")
+	err = r.RunRvmCmd(rubyInstallCmd, &rvmLayer)
 	if err != nil {
 		return packit.BuildResult{}, err
 	}
 
-	profileDScript := filepath.Join(rvmLayer.Path, "profile.d", "rvm")
 	gemUpdateSystemCmd := strings.Join([]string{
-		"source",
-		profileDScript,
-		"&&",
 		"gem",
 		"update",
 		"-N",
 		"--system",
 	}, " ")
 
-	cmd = exec.Command("bash", "-c", gemUpdateSystemCmd)
-	err = r.runCommand(cmd, &rvmLayer)
+	err = r.RunRvmCmd(gemUpdateSystemCmd, &rvmLayer)
 	if err != nil {
 		return packit.BuildResult{}, err
 	}
@@ -129,24 +179,4 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 			rvmLayer,
 		},
 	}, nil
-}
-
-func (r Env) runCommand(cmd *exec.Cmd, rvmLayer *packit.Layer) error {
-	cmd.Env = append(
-		os.Environ(),
-		"rvm_path="+rvmLayer.Path,
-		"rvm_scripts_path="+filepath.Join(rvmLayer.Path, "scripts"),
-		"rvm_autoupdate_flag=0",
-	)
-	r.logger.Action("Executing: %s", strings.Join(cmd.Args, " "))
-	r.logger.Subdetail("Environment variables:\n%s", strings.Join(cmd.Env, "\n"))
-	r.logger.Break()
-	err := cmd.Run()
-	if err != nil {
-		r.logger.Detail("Command failed: %s", cmd.String())
-		r.logger.Detail("Error status code: %s", err.Error())
-		return err
-	}
-
-	return nil
 }

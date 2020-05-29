@@ -7,6 +7,16 @@ import (
 	"github.com/paketo-buildpacks/packit"
 )
 
+// DefaultVariables returns a list of environment variables to help with
+// command execution
+func DefaultVariables(rvmLayer *packit.Layer) []string {
+	return []string{
+		"rvm_path=" + rvmLayer.Path,
+		"rvm_scripts_path=" + filepath.Join(rvmLayer.Path, "scripts"),
+		"rvm_autoupdate_flag=0",
+	}
+}
+
 // Environment represents a shell environment
 type Environment struct {
 	logger LogEmitter
