@@ -96,6 +96,7 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 				return packit.DetectResult{}, err
 			}
 		}
+		logger.Detail("Detected Ruby version: %s", rubyVersion)
 
 		requirements := []packit.BuildPlanRequirement{
 			{
@@ -119,6 +120,7 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 			if buildPackYML.NodeVersion != "" {
 				nodeVersion = buildPackYML.NodeVersion
 			}
+			logger.Detail("The buildpack requested node version: %s", nodeVersion)
 			requirements = append(requirements, packit.BuildPlanRequirement{
 				Name:    "node",
 				Version: nodeVersion,
@@ -129,7 +131,6 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 			})
 		}
 
-		logger.Detail("Detected Ruby version: %s", rubyVersion)
 		return packit.DetectResult{
 			Plan: packit.BuildPlan{
 				Provides: []packit.BuildPlanProvision{
