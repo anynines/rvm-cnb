@@ -23,21 +23,19 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		cnbDir     string
 		workingDir string
 
-		rubyVersionParser    *fakes.VersionParser
-		gemFileParser        *fakes.VersionParser
-		gemFileLockParser    *fakes.VersionParser
-		bundlerVersionParser *fakes.VersionParser
-		detect               packit.DetectFunc
+		rubyVersionParser *fakes.VersionParser
+		gemFileParser     *fakes.VersionParser
+		gemFileLockParser *fakes.VersionParser
+		detect            packit.DetectFunc
 	)
 
 	it.Before(func() {
 		rubyVersionParser = &fakes.VersionParser{}
 		gemFileParser = &fakes.VersionParser{}
 		gemFileLockParser = &fakes.VersionParser{}
-		bundlerVersionParser = &fakes.VersionParser{}
 
 		logEmitter := rvm.NewLogEmitter(os.Stdout)
-		detect = rvm.Detect(logEmitter, rubyVersionParser, gemFileParser, gemFileLockParser, bundlerVersionParser)
+		detect = rvm.Detect(logEmitter, rubyVersionParser, gemFileParser, gemFileLockParser)
 	})
 
 	it("returns a plan that does not provide rvm because no Gemfile was found", func() {
@@ -215,46 +213,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 				},
 			}))
 		})
-
-		// it("returns a plan that provides RVM, requires node and determines the bundler version by reading Gemfile.lock", func() {
-		// 	bundlerVersionGemfileLock, err := ioutil.ReadFile("../test/fixtures/read_version_bundler/Gemfile.lock")
-		// 	Expect(err).NotTo(HaveOccurred())
-
-		// 	gemFileLockPath := filepath.Join(workingDir, "Gemfile.lock")
-		// 	err = ioutil.WriteFile(gemFileLockPath, bundlerVersionGemfileLock, 0644)
-		// 	Expect(err).NotTo(HaveOccurred())
-
-		// 	rubyVersionParser.ParseVersionCall.Receives.Path = gemFileLockPath
-		// 	rubyVersionParser.ParseVersionCall.Returns.Version = "2.1.4"
-
-		// 	result, err := detect(packit.DetectContext{
-		// 		CNBPath:    cnbDir,
-		// 		WorkingDir: workingDir,
-		// 	})
-		// 	Expect(err).NotTo(HaveOccurred())
-		// 	Expect(result.Plan).To(Equal(packit.BuildPlan{
-		// 		Provides: []packit.BuildPlanProvision{
-		// 			{Name: "rvm"},
-		// 		},
-		// 		Requires: []packit.BuildPlanRequirement{
-		// 			{
-		// 				Name: "rvm",
-		// 				Metadata: rvm.BuildPlanMetadata{
-		// 					RubyVersion:    "2.7.1",
-		// 					BundlerVersion: "2.1.4",
-		// 				},
-		// 			},
-		// 			{
-		// 				Name:    "node",
-		// 				Version: rvm.DefaultNodeVersion,
-		// 				Metadata: rvm.NodebuildPlanMetadata{
-		// 					Build:  true,
-		// 					Launch: true,
-		// 				},
-		// 			},
-		// 		},
-		// 	}))
-		// })
 
 		it.After(func() {
 			Expect(os.RemoveAll(workingDir)).To(Succeed())
