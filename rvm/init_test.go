@@ -9,6 +9,7 @@ import (
 
 func TestUnitRvm(t *testing.T) {
 	suite := spec.New("rvm", spec.Report(report.Terminal{}))
+	suite("Configuration", testConfiguration)
 	suite("Detect", testDetect)
 	suite.Run(t)
 }
