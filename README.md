@@ -17,4 +17,5 @@ This CNB installs the [Node CNB](https://github.com/paketo-buildpacks/node-engin
 
 ## TODO
 
-1. Tests have to be written.
+1. Refactor this CNB and remove Bundler specific functionality
+1. Only leave functionality directly related to the installation or configuration of RVM and a particular Ruby version

@@ -1,7 +1,7 @@
 package rvm
 
 import (
-	"github.com/cloudfoundry/packit"
+	"github.com/paketo-buildpacks/packit"
 )
 
 // EnvironmentConfiguration represents an environment and a path to the RVM

@@ -3,7 +3,7 @@ package rvm
 import (
 	"io"
 
-	"github.com/cloudfoundry/packit/scribe"
+	"github.com/paketo-buildpacks/packit/scribe"
 )
 
 // LogEmitter allows to write logs using the packing lib
