@@ -26,20 +26,20 @@ type NodebuildPlanMetadata struct {
 // VersionParserEnv represents an environment that contains everything that is
 // needed to execute a particular ruby version parser
 type VersionParserEnv struct {
-	parser  VersionParser
-	path    string
-	context packit.DetectContext
-	logger  LogEmitter
+	Parser  VersionParser
+	Path    string
+	Context packit.DetectContext
+	Logger  LogEmitter
 }
 
 // ParseVersion is a generalized function that parses a particular ruby version
 // source
 func ParseVersion(env VersionParserEnv, version *string) error {
-	fullPath := filepath.Join(env.context.WorkingDir, env.path)
-	parseResultRubyVersion, err := env.parser.ParseVersion(fullPath)
+	fullPath := filepath.Join(env.Context.WorkingDir, env.Path)
+	parseResultRubyVersion, err := env.Parser.ParseVersion(fullPath)
 	if err == nil && parseResultRubyVersion != "" {
 		*version = parseResultRubyVersion
-		env.logger.Detail("Found Ruby version in %s: %s", fullPath, *version)
+		env.Logger.Detail("Found Ruby version in %s: %s", fullPath, *version)
 		return nil
 	}
 	return err
@@ -64,35 +64,35 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 		// ruby version string "wins"
 		versionEnvs := []VersionParserEnv{
 			{
-				parser:  rubyVersionParser,
-				path:    ".ruby-version",
-				context: context,
-				logger:  logger,
+				Parser:  rubyVersionParser,
+				Path:    ".ruby-version",
+				Context: context,
+				Logger:  logger,
 			},
 			{
-				parser:  gemFileParser,
-				path:    "Gemfile",
-				context: context,
-				logger:  logger,
+				Parser:  gemFileParser,
+				Path:    "Gemfile",
+				Context: context,
+				Logger:  logger,
 			},
 			{
-				parser:  gemFileLockParser,
-				path:    "Gemfile.lock",
-				context: context,
-				logger:  logger,
+				Parser:  gemFileLockParser,
+				Path:    "Gemfile.lock",
+				Context: context,
+				Logger:  logger,
 			},
 			{
-				parser:  buildpackYMLParser,
-				path:    "buildpack.yml",
-				context: context,
-				logger:  logger,
+				Parser:  buildpackYMLParser,
+				Path:    "buildpack.yml",
+				Context: context,
+				Logger:  logger,
 			},
 		}
 
 		for _, env := range versionEnvs {
 			err = ParseVersion(env, &rubyVersion)
 			if err != nil {
-				logger.Detail("Parsing '%s' failed", env.path)
+				logger.Detail("Parsing '%s' failed", env.Path)
 				return packit.DetectResult{}, err
 			}
 		}
