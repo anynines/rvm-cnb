@@ -56,13 +56,13 @@ func (r Env) RunBashCmd(command string, rvmLayer *packit.Layer) error {
 
 	if err != nil {
 		r.Logger.Subprocess("Command failed: %s", cmd.String())
-		r.Logger.Subprocess("Command stderr: %s", stdErrBytes)
+		r.Logger.Subprocess("Command stderr: %s", stdErrBytes.String())
 		r.Logger.Subprocess("Error status code: %s", err.Error())
 		return err
 	}
 
 	r.Logger.Subprocess("Command succeeded: %s", cmd.String())
-	r.Logger.Subprocess("Command output: %s", stdOutBytes)
+	r.Logger.Subprocess("Command output: %s", stdOutBytes.String())
 
 	return nil
 }
