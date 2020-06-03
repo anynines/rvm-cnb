@@ -91,7 +91,7 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 
 		for _, env := range versionEnvs {
 			err = ParseVersion(env, &rubyVersion)
-			if err != nil {
+			if err != nil && !os.IsNotExist(err) {
 				logger.Detail("Parsing '%s' failed", env.Path)
 				return packit.DetectResult{}, err
 			}

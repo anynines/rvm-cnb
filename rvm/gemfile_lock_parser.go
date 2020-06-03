@@ -18,6 +18,11 @@ func NewGemfileLockParser() GemfileLockParser {
 // exists, parses it to find a string "RUBY VERSION" and returns the string
 // in the next line minus the whitespace and the prefix string "ruby "
 func (r GemfileLockParser) ParseVersion(path string) (string, error) {
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return "", err
+	}
+
 	GemfileLock, err := os.Open(path)
 	if err != nil {
 		return "", err

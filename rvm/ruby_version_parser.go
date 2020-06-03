@@ -17,6 +17,11 @@ func NewRubyVersionParser() RubyVersionParser {
 // ParseVersion looks for a .ruby-version file in a given path and, if it
 // exists, parses it and removes trailing whitespace
 func (r RubyVersionParser) ParseVersion(path string) (string, error) {
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return "", err
+	}
+
 	rvFile, err := os.Open(path)
 	if err != nil {
 		return "", err
