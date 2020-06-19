@@ -14,7 +14,7 @@ The RVM Cloud Native Buildpack installs RVM and a Ruby version in an OCI image. 
 
 ### buildpack.yml
 
-A buildpack.yml may specify
+A buildpack.yml may specify the following keys. If buildpack.yml specifies a Ruby version, it will have priority over all other Ruby version sources.
 
 ```yaml
 rvm:
