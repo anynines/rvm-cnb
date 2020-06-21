@@ -43,7 +43,6 @@ func (r Env) RunBashCmd(command string, rvmLayer *packit.Layer) error {
 	)
 
 	r.Logger.Process("Executing: %s", strings.Join(cmd.Args, " "))
-	r.Logger.Break()
 
 	var stdOutBytes bytes.Buffer
 	cmd.Stdout = &stdOutBytes
@@ -54,14 +53,22 @@ func (r Env) RunBashCmd(command string, rvmLayer *packit.Layer) error {
 	err := cmd.Run()
 
 	if err != nil {
-		r.Logger.Subprocess("Command failed: %s", cmd.String())
-		r.Logger.Subprocess("Command stderr:\n\n%s", stdErrBytes.String())
+		r.Logger.Process("Command failed: %s", cmd.String())
+		if len(stdErrBytes.String()) > 0 {
+			r.Logger.Process("Command stderr:")
+			r.Logger.Subprocess(stdErrBytes.String())
+		}
 		r.Logger.Subprocess("Error status code: %s", err.Error())
+		r.Logger.Break()
 		return err
 	}
 
-	r.Logger.Subprocess("Command succeeded: %s", cmd.String())
-	r.Logger.Subprocess("Command output:\n\n%s", stdOutBytes.String())
+	r.Logger.Process("Command succeeded: %s", cmd.String())
+	if len(stdErrBytes.String()) > 0 {
+		r.Logger.Process("Command output:")
+		r.Logger.Subprocess(stdOutBytes.String())
+	}
+	r.Logger.Break()
 
 	return nil
 }
@@ -155,6 +162,17 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 		r.rubyVersion(),
 	}, " ")
 	err = r.RunRvmCmd(rubyInstallCmd, &rvmLayer)
+	if err != nil {
+		return packit.BuildResult{}, err
+	}
+
+	installRubyGemsUpdateSystemCmd := strings.Join([]string{
+		"gem",
+		"install",
+		"-N",
+		"rubygems-update",
+	}, " ")
+	err = r.RunRvmCmd(installRubyGemsUpdateSystemCmd, &rvmLayer)
 	if err != nil {
 		return packit.BuildResult{}, err
 	}
