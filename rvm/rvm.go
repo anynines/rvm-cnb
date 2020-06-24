@@ -64,7 +64,7 @@ func (r Env) RunBashCmd(command string, rvmLayer *packit.Layer) error {
 	}
 
 	r.Logger.Process("Command succeeded: %s", cmd.String())
-	if len(stdErrBytes.String()) > 0 {
+	if len(stdOutBytes.String()) > 0 {
 		r.Logger.Process("Command output:")
 		r.Logger.Subprocess(stdOutBytes.String())
 	}
