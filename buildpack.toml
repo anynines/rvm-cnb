@@ -3,7 +3,7 @@ api = "0.2"
 [buildpack]
   id = "com.anynines.buildpacks.rvm"
   name = "RVM Buildpack in Go"
-  version = "0.1.10"
+  version = "0.1.11"
 
 [metadata]
   include_files = ["bin/build","bin/detect","buildpack.toml"]
@@ -20,6 +20,3 @@ api = "0.2"
 
 [[stacks]]
   id = "org.cloudfoundry.stacks.cflinuxfs3"
-
-[[stacks]]
-  id = "heroku-18"
