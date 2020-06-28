@@ -125,7 +125,9 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 	}
 
 	if rvmLayer.Metadata["rvm_version"] != nil &&
-		rvmLayer.Metadata["rvm_version"].(string) == r.rvmVersion() {
+		rvmLayer.Metadata["rvm_version"].(string) == r.rvmVersion() &&
+		rvmLayer.Metadata["ruby_version"] != nil &&
+		rvmLayer.Metadata["ruby_version"].(string) == r.rubyVersion() {
 		r.Logger.Process("Reusing cached layer %s", rvmLayer.Path)
 		return packit.BuildResult{
 			Plan: r.Context.Plan,
