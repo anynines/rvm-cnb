@@ -64,8 +64,8 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 		// ruby version string "wins"
 		versionEnvs := []VersionParserEnv{
 			{
-				Parser:  rubyVersionParser,
-				Path:    ".ruby-version",
+				Parser:  gemFileLockParser,
+				Path:    "Gemfile.lock",
 				Context: context,
 				Logger:  logger,
 			},
@@ -76,8 +76,8 @@ func Detect(logger LogEmitter, rubyVersionParser VersionParser, gemFileParser Ve
 				Logger:  logger,
 			},
 			{
-				Parser:  gemFileLockParser,
-				Path:    "Gemfile.lock",
+				Parser:  rubyVersionParser,
+				Path:    ".ruby-version",
 				Context: context,
 				Logger:  logger,
 			},
