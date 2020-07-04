@@ -168,7 +168,6 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 	gpgBinaryInstalledOutput, err := exec.Command("which", "gpg").Output()
 
 	if len(gpgBinaryInstalledOutput) > 0 {
-		r.Logger.Process("GPG binary found with o: %s", gpgBinaryInstalledOutput)
 		importGPGKey1Cmd := strings.Join([]string{
 			"curl",
 			"-sSL",
@@ -226,35 +225,6 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 		r.rubyVersion(),
 	}, " ")
 	err = r.RunRvmCmd(rubyInstallCmd, &rvmLayer)
-	if err != nil {
-		return packit.BuildResult{}, err
-	}
-
-	installRubyGemsUpdateSystemCmd := strings.Join([]string{
-		"gem",
-		"install",
-		"-N",
-		"rubygems-update",
-	}, " ")
-	err = r.RunRvmCmd(installRubyGemsUpdateSystemCmd, &rvmLayer)
-	if err != nil {
-		return packit.BuildResult{}, err
-	}
-
-	gemUpdateSystemCmd := strings.Join([]string{
-		"gem",
-		"update",
-		"-N",
-		"--system",
-		"3.0.8",
-	}, " ")
-	err = r.RunRvmCmd(gemUpdateSystemCmd, &rvmLayer)
-	if err != nil {
-		return packit.BuildResult{}, err
-	}
-
-	gemCleanupCmd := strings.Join([]string{"gem", "cleanup"}, " ")
-	err = r.RunRvmCmd(gemCleanupCmd, &rvmLayer)
 	if err != nil {
 		return packit.BuildResult{}, err
 	}
