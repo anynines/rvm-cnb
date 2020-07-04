@@ -165,33 +165,38 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 	// does not have these keys imported yet fails otherwise
 	// see: https://rvm.io/rvm/security
 	// commented for now and kept for future usage
-	// importGPGKey1Cmd := strings.Join([]string{
-	// 	"curl",
-	// 	"-sSL",
-	// 	"https://rvm.io/mpapis.asc",
-	// 	"|",
-	// 	"gpg",
-	// 	"--import",
-	// 	"-",
-	// }, " ")
-	// err = r.RunBashCmd(importGPGKey1Cmd, &rvmLayer)
-	// if err != nil {
-	// 	return packit.BuildResult{}, err
-	// }
+	gpgBinaryInstalledOutput, err := exec.Command("which", "gpg").Output()
 
-	// importGPGKey2Cmd := strings.Join([]string{
-	// 	"curl",
-	// 	"-sSL",
-	// 	"https://rvm.io/pkuczynski.asc",
-	// 	"|",
-	// 	"gpg",
-	// 	"--import",
-	// 	"-",
-	// }, " ")
-	// err = r.RunBashCmd(importGPGKey2Cmd, &rvmLayer)
-	// if err != nil {
-	// 	return packit.BuildResult{}, err
-	// }
+	if len(gpgBinaryInstalledOutput) > 0 {
+		r.Logger.Process("GPG binary found with o: %s", gpgBinaryInstalledOutput)
+		importGPGKey1Cmd := strings.Join([]string{
+			"curl",
+			"-sSL",
+			"https://rvm.io/mpapis.asc",
+			"|",
+			"gpg",
+			"--import",
+			"-",
+		}, " ")
+		err = r.RunBashCmd(importGPGKey1Cmd, &rvmLayer)
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
+		importGPGKey2Cmd := strings.Join([]string{
+			"curl",
+			"-sSL",
+			"https://rvm.io/pkuczynski.asc",
+			"|",
+			"gpg",
+			"--import",
+			"-",
+		}, " ")
+		err = r.RunBashCmd(importGPGKey2Cmd, &rvmLayer)
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+	}
 
 	shellCmd := strings.Join([]string{
 		"curl",
@@ -241,6 +246,7 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 		"update",
 		"-N",
 		"--system",
+		"3.0.8",
 	}, " ")
 	err = r.RunRvmCmd(gemUpdateSystemCmd, &rvmLayer)
 	if err != nil {
