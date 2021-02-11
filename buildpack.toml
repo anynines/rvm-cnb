@@ -6,7 +6,8 @@ api = "0.2"
   version = "0.1.14"
 
 [metadata]
-  include_files = ["bin/build","bin/detect","buildpack.toml"]
+  include-files = ["bin/build","bin/detect","buildpack.toml"]
+  pre-package = "./scripts/build.sh"
 
   [metadata.configuration]
     uri = "https://get.rvm.io"
