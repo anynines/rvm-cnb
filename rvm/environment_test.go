@@ -44,7 +44,7 @@ func testEnvironment(t *testing.T, context spec.G, it spec.S) {
 			err = ioutil.WriteFile(filepath.Join(layersDir, "scripts", "rvm"), []byte{}, 0644)
 			Expect(err).NotTo(HaveOccurred())
 
-			configuration, err := rvm.ReadConfiguration(cnbDir)
+			configuration, _ := rvm.ReadConfiguration(cnbDir)
 			buildContext := packit.BuildContext{CNBPath: cnbDir}
 			logEmitter := rvm.NewLogEmitter(os.Stdout)
 			environment := rvm.NewEnvironment(logEmitter)

@@ -165,7 +165,7 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 	// does not have these keys imported yet fails otherwise
 	// see: https://rvm.io/rvm/security
 	// commented for now and kept for future usage
-	gpgBinaryInstalledOutput, err := exec.Command("which", "gpg").Output()
+	gpgBinaryInstalledOutput, _ := exec.Command("which", "gpg").Output()
 
 	if len(gpgBinaryInstalledOutput) > 0 {
 		importGPGKey1Cmd := strings.Join([]string{
