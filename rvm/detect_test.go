@@ -87,7 +87,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					{
 						Name: "rvm",
 						Metadata: rvm.BuildPlanMetadata{
-							RubyVersion: "2.7.1",
+							RubyVersion:   "2.7.1",
+							VersionSource: "rvm-cnb",
 						},
 					},
 				},
@@ -115,7 +116,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					{
 						Name: "rvm",
 						Metadata: rvm.BuildPlanMetadata{
-							RubyVersion: "2.3.8",
+							RubyVersion:   "2.3.8",
+							VersionSource: "rvm-cnb",
 						},
 					},
 				},
@@ -146,7 +148,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					{
 						Name: "rvm",
 						Metadata: rvm.BuildPlanMetadata{
-							RubyVersion: "2.5.3",
+							RubyVersion:   "2.5.3",
+							VersionSource: "rvm-cnb",
 						},
 					},
 				},
@@ -177,7 +180,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					{
 						Name: "rvm",
 						Metadata: rvm.BuildPlanMetadata{
-							RubyVersion: "2.5.3",
+							RubyVersion:   "2.5.3",
+							VersionSource: "rvm-cnb",
 						},
 					},
 				},
@@ -208,7 +212,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					{
 						Name: "rvm",
 						Metadata: rvm.BuildPlanMetadata{
-							RubyVersion: "2.5.3",
+							RubyVersion:   "2.5.3",
+							VersionSource: "rvm-cnb",
 						},
 					},
 				},
@@ -242,15 +247,15 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					{
 						Name: "rvm",
 						Metadata: rvm.BuildPlanMetadata{
-							RubyVersion: "2.5.3",
+							RubyVersion:   "2.5.3",
+							VersionSource: "rvm-cnb",
 						},
 					},
 					{
-						Name:    "node",
-						Version: buildPackYMLParsed.NodeVersion,
-						Metadata: rvm.NodebuildPlanMetadata{
-							Build:  true,
-							Launch: true,
+						Name: "node",
+						Metadata: rvm.BuildPlanMetadata{
+							RubyVersion:   buildPackYMLParsed.NodeVersion,
+							VersionSource: "rvm-cnb",
 						},
 					},
 				},
