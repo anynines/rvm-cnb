@@ -5,8 +5,7 @@ The RVM Cloud Native Buildpack installs RVM and a Ruby version in an OCI image. 
 ## Functionality
 
 1. The RVM CNB installs RVM into its own layer. The version of RVM to be installed can be configured in [buildpack.toml](buildpack.toml).
-1. `Gemfile` and `Gemfile.lock` files must exist in the application directory in order to RVM CNB
-can be able to start DETECTION phase. 
+1. The files `Gemfile` and `Gemfile.lock` must exist in the application directory so that the RVM CNB can start the DETECTION phase.
 1. It also installs a version of Ruby using RVM. The version to be installed is selected as follows (in order of precedence, the method listed highest wins):
     1. If there is a called `buildpack.yml` in the application directory, it may specify a ruby version. See below to learn possible keys in the buildpack.yml file.
     1. If there is a file called `Gemfile.lock`, then the string "RUBY VERSION" is searched within this file and if it exists, the contents of the next line is used to select the Ruby version.
