@@ -1,0 +1,15 @@
+[[buildpacks]]
+id = "com.anynines.buildpacks.gitcredentials"
+uri = "https://github.com/avarteqgmbh/gitcredentials/releases/download/v0.0.7/buildpack.tgz"
+
+[[order]]
+  [[order.group]]
+  id = "com.anynines.buildpacks.gitcredentials"
+  optional = true
+
+# Stack that will be used by the builder
+[stack]
+id = "io.buildpacks.stacks.bionic"
+
+build-image = "anyninesgmbh/build-n-run:base-cnb"
+run-image = "anyninesgmbh/build-n-run:base-cnb"
