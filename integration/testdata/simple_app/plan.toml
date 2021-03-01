@@ -1,0 +1,5 @@
+[[requires]]
+  name = "rvm"
+
+  [requires.metadata]
+    launch = true
