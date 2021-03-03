@@ -3,7 +3,6 @@ api = "0.2"
 [buildpack]
   id = "com.anynines.buildpacks.rvm"
   name = "RVM Buildpack in Go"
-  version = "0.1.14"
 
 [metadata]
   include-files = ["bin/build","bin/detect","buildpack.toml"]
