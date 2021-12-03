@@ -45,6 +45,11 @@ func NewRemoteFetcher(buildpackCache BuildpackCache, gitReleaseFetcher GitReleas
 	}
 }
 
+func (r RemoteFetcher) WithPackager(packager Packager) RemoteFetcher {
+	r.packager = packager
+	return r
+}
+
 func (r RemoteFetcher) Get(buildpack RemoteBuildpack) (string, error) {
 	release, err := r.gitReleaseFetcher.Get(buildpack.Org, buildpack.Repo)
 	if err != nil {
@@ -99,7 +104,7 @@ func (r RemoteFetcher) Get(buildpack RemoteBuildpack) (string, error) {
 			}
 			defer os.RemoveAll(downloadDir)
 
-			err = vacation.NewTarGzipArchive(bundle).StripComponents(1).Decompress(downloadDir)
+			err = vacation.NewArchive(bundle).StripComponents(1).Decompress(downloadDir)
 			if err != nil {
 				return "", err
 			}
