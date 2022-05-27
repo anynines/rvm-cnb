@@ -5,7 +5,7 @@ import (
 
 	"github.com/avarteqgmbh/rvm-cnb/rvm"
 
-	"github.com/paketo-buildpacks/packit"
+	"github.com/paketo-buildpacks/packit/v2"
 )
 
 func main() {

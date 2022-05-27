@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/avarteqgmbh/rvm-cnb/rvm"
-	"github.com/paketo-buildpacks/packit"
+	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/sclevine/spec"
 
 	. "github.com/onsi/gomega"
