@@ -130,7 +130,6 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 		rvmLayer.Metadata["ruby_version"].(string) == r.rubyVersion() {
 		r.Logger.Process("Reusing cached layer %s", rvmLayer.Path)
 		return packit.BuildResult{
-			Plan: r.Context.Plan,
 			Layers: []packit.Layer{
 				rvmLayer,
 			},
@@ -242,7 +241,6 @@ func (r Env) installRVM() (packit.BuildResult, error) {
 	}
 
 	return packit.BuildResult{
-		Plan: r.Context.Plan,
 		Layers: []packit.Layer{
 			rvmLayer,
 		},
