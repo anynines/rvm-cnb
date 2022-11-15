@@ -10,7 +10,7 @@ api = "0.8"
 
   [metadata.configuration]
     uri = "https://get.rvm.io"
-    default_rvm_version = "1.29.10"
+    default_rvm_version = "1.29.12"
     default_ruby_version = "2.7.1"
     default_require_node = false
     default_node_version = "12.*"
